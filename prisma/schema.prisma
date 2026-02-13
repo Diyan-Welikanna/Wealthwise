@@ -8,16 +8,19 @@ datasource db {
 }
 
 model User {
-  id           Int           @id @default(autoincrement())
-  name         String        @db.VarChar(100)
-  email        String        @unique @db.VarChar(100)
-  password     String        @db.VarChar(255)
-  phone        String?       @db.VarChar(20)
-  createdAt    DateTime      @default(now()) @map("created_at")
-  updatedAt    DateTime      @updatedAt @map("updated_at")
-  incomes      Income[]
-  transactions Transaction[]
-  budgets      UserBudget?
+  id                     Int                     @id @default(autoincrement())
+  name                   String                  @db.VarChar(100)
+  email                  String                  @unique @db.VarChar(100)
+  password               String                  @db.VarChar(255)
+  phone                  String?                 @db.VarChar(20)
+  riskTolerance          String                  @default("moderate") @map("risk_tolerance") @db.VarChar(20) // conservative, moderate, aggressive
+  createdAt              DateTime                @default(now()) @map("created_at")
+  updatedAt              DateTime                @updatedAt @map("updated_at")
+  incomes                Income[]
+  transactions           Transaction[]
+  budgets                UserBudget?
+  investmentPortfolio    InvestmentPortfolio[]
+  investmentTransactions InvestmentTransaction[]
 
   @@map("users")
 }
@@ -91,4 +94,42 @@ model RecurringExpense {
   @@index([userId], map: "recurring_expenses_user_id_fkey")
   @@index([categoryId], map: "recurring_expenses_category_id_fkey")
   @@map("recurring_expenses")
+}
+
+model InvestmentPortfolio {
+  id                     Int                     @id @default(autoincrement())
+  userId                 Int                     @map("user_id")
+  investmentType         String                  @map("investment_type") @db.VarChar(50) // stocks, bonds, mutual_funds, real_estate, crypto, fixed_deposit, gold
+  name                   String                  @db.VarChar(100)
+  units                  Decimal                 @db.Decimal(12, 4)
+  buyPrice               Decimal                 @map("buy_price") @db.Decimal(10, 2)
+  currentPrice           Decimal                 @map("current_price") @db.Decimal(10, 2)
+  totalInvested          Decimal                 @map("total_invested") @db.Decimal(12, 2)
+  currentValue           Decimal                 @map("current_value") @db.Decimal(12, 2)
+  purchaseDate           DateTime                @map("purchase_date") @db.Date
+  createdAt              DateTime                @default(now()) @map("created_at")
+  updatedAt              DateTime                @updatedAt @map("updated_at")
+  user                   User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  investmentTransactions InvestmentTransaction[]
+
+  @@index([userId], map: "investment_portfolio_user_id_fkey")
+  @@map("investment_portfolio")
+}
+
+model InvestmentTransaction {
+  id          Int                 @id @default(autoincrement())
+  userId      Int                 @map("user_id")
+  portfolioId Int                 @map("portfolio_id")
+  type        String              @db.VarChar(10) // buy, sell
+  units       Decimal             @db.Decimal(12, 4)
+  pricePerUnit Decimal            @map("price_per_unit") @db.Decimal(10, 2)
+  totalAmount Decimal             @map("total_amount") @db.Decimal(12, 2)
+  date        DateTime            @db.Date
+  createdAt   DateTime            @default(now()) @map("created_at")
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  portfolio   InvestmentPortfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "investment_transactions_user_id_fkey")
+  @@index([portfolioId], map: "investment_transactions_portfolio_id_fkey")
+  @@map("investment_transactions")
 }

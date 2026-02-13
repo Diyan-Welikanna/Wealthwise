@@ -23,11 +23,12 @@ export default function Sidebar() {
     { href: '/budget', label: 'Budget', icon: '📈' },
     { href: '/expenses', label: 'Expenses', icon: '💸' },
     { href: '/recurring', label: 'Recurring', icon: '🔄' },
+    { href: '/investment', label: 'Investment', icon: '💹' },
     { href: '/profile', label: 'Profile', icon: '👤' },
   ]
   
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-white dark:bg-gray-900 shadow-lg flex flex-col border-r dark:border-gray-800">
+    <aside className="fixed left-0 top-0 h-screen w-64 bg-white dark:bg-gray-900 shadow-lg flex flex-col border-r dark:border-gray-800" role="navigation" aria-label="Main navigation">
       {/* Logo */}
       <div className="p-6 border-b dark:border-gray-800">
         <Link href="/dashboard" className="flex items-center gap-3">
@@ -54,6 +55,7 @@ export default function Sidebar() {
                       ? 'bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 font-semibold'
                       : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
                   }`}
+                  aria-current={isActive ? 'page' : undefined}
                 >
                   <span className="text-xl">{item.icon}</span>
                   <span>{item.label}</span>

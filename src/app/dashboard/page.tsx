@@ -10,6 +10,8 @@ import HealthScoreWidget from "@/components/HealthScoreWidget"
 import MonthlyTrendChart from "@/components/charts/MonthlyTrendChart"
 import CategoryPieChart from "@/components/charts/CategoryPieChart"
 import BudgetComparisonChart from "@/components/charts/BudgetComparisonChart"
+import YearComparisonChart from "@/components/charts/YearComparisonChart"
+import ExpenseHeatmap from "@/components/charts/ExpenseHeatmap"
 import DateRangeFilter from "@/components/DateRangeFilter"
 import RecentTransactions from "@/components/RecentTransactions"
 import BudgetAlerts from "@/components/BudgetAlerts"
@@ -273,7 +275,7 @@ export default function DashboardPage() {
           {/* Charts Row 1 */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             <div className="lg:col-span-2">
-              <MonthlyTrendChart expenses={expenses} categoryColors={categoryColors} />
+              <MonthlyTrendChart expenses={expenses} categoryColors={categoryColors} loading={loading} />
             </div>
             <HealthScoreWidget 
               score={budgetHealth}
@@ -287,13 +289,20 @@ export default function DashboardPage() {
 
           {/* Charts Row 2 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <CategoryPieChart expenses={expenses} categoryColors={categoryColors} />
+            <CategoryPieChart expenses={expenses} categoryColors={categoryColors} loading={loading} />
             <BudgetComparisonChart 
               income={income}
               budget={budget}
               expenses={expenses}
               categoryColors={categoryColors}
+              loading={loading}
             />
+          </div>
+
+          {/* Advanced Analytics - Phase 2 */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <YearComparisonChart expenses={expenses} categoryColors={categoryColors} loading={loading} />
+            <ExpenseHeatmap expenses={expenses} categoryColors={categoryColors} loading={loading} />
           </div>
 
           {/* Dashboard Enhancements Row */}

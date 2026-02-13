@@ -1,13 +1,18 @@
 'use client'
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts'
+import ChartSkeleton from '../ChartSkeleton'
 
 interface CategoryPieChartProps {
   expenses: Record<string, any[]>
   categoryColors: Record<string, string>
+  loading?: boolean
 }
 
-export default function CategoryPieChart({ expenses, categoryColors }: CategoryPieChartProps) {
+export default function CategoryPieChart({ expenses, categoryColors, loading = false }: CategoryPieChartProps) {
+  if (loading) {
+    return <ChartSkeleton height={300} type="pie" />
+  }
   // Calculate total spent per category
   const data = Object.keys(categoryColors).map(category => {
     const categoryKey = category.toLowerCase()
@@ -47,7 +52,7 @@ export default function CategoryPieChart({ expenses, categoryColors }: CategoryP
               ))}
             </Pie>
             <Tooltip 
-              formatter={(value: any) => `$${parseFloat(value).toFixed(2)}`}
+              formatter={(value: any) => `₹${parseFloat(value).toFixed(2)}`}
               contentStyle={{
                 backgroundColor: 'white',
                 border: '1px solid #e5e7eb',

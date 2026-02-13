@@ -15,14 +15,14 @@ export function exportToCSV(expenses: Expense[], filename = 'expenses') {
   }
 
   // CSV headers
-  const headers = ['Date', 'Category', 'Description', 'Amount'];
+  const headers = ['Date', 'Category', 'Description', 'Amount (₹)'];
   
   // CSV rows
   const rows = expenses.map(expense => [
     format(new Date(expense.date), 'yyyy-MM-dd'),
     expense.category,
     expense.description || 'No description',
-    expense.amount.toFixed(2)
+    `₹${expense.amount.toFixed(2)}`
   ]);
 
   // Combine headers and rows

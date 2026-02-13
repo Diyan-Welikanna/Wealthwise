@@ -2,6 +2,7 @@
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { format, subMonths, startOfMonth } from 'date-fns'
+import ChartSkeleton from '../ChartSkeleton'
 
 interface TrendData {
   month: string
@@ -11,9 +12,13 @@ interface TrendData {
 interface MonthlyTrendChartProps {
   expenses: Record<string, any[]>
   categoryColors: Record<string, string>
+  loading?: boolean
 }
 
-export default function MonthlyTrendChart({ expenses, categoryColors }: MonthlyTrendChartProps) {
+export default function MonthlyTrendChart({ expenses, categoryColors, loading = false }: MonthlyTrendChartProps) {
+  if (loading) {
+    return <ChartSkeleton height={300} type="line" />
+  }
   // Generate data for last 6 months
   const generateTrendData = (): TrendData[] => {
     const months: TrendData[] = []
@@ -62,7 +67,7 @@ export default function MonthlyTrendChart({ expenses, categoryColors }: MonthlyT
           <YAxis 
             stroke="#6b7280"
             style={{ fontSize: '12px' }}
-            tickFormatter={(value) => `$${value}`}
+            tickFormatter={(value) => `₹${value}`}
           />
           <Tooltip 
             contentStyle={{
@@ -71,7 +76,7 @@ export default function MonthlyTrendChart({ expenses, categoryColors }: MonthlyT
               borderRadius: '8px',
               padding: '8px'
             }}
-            formatter={(value: any) => `$${parseFloat(value).toFixed(2)}`}
+            formatter={(value: any) => `₹${parseFloat(value).toFixed(2)}`}
           />
           <Legend 
             wrapperStyle={{ fontSize: '12px' }}

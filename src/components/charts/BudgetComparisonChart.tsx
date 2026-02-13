@@ -1,20 +1,26 @@
 'use client'
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
+import ChartSkeleton from '../ChartSkeleton';
 
 interface BudgetComparisonChartProps {
   income: number
   budget: Record<string, { percentage: number }>
   expenses: Record<string, any[]>
   categoryColors: Record<string, string>
+  loading?: boolean
 }
 
 export default function BudgetComparisonChart({ 
   income, 
   budget, 
   expenses, 
-  categoryColors 
+  categoryColors,
+  loading = false
 }: BudgetComparisonChartProps) {
+  if (loading) {
+    return <ChartSkeleton height={400} type="bar" />
+  }
   // Prepare data for comparison
   const data = Object.keys(categoryColors).map(category => {
     const categoryKey = category.toLowerCase()
@@ -45,7 +51,7 @@ export default function BudgetComparisonChart({
             type="number"
             stroke="#6b7280"
             style={{ fontSize: '12px' }}
-            tickFormatter={(value) => `$${value}`}
+            tickFormatter={(value) => `₹${value}`}
           />
           <YAxis 
             dataKey="category"
@@ -55,7 +61,7 @@ export default function BudgetComparisonChart({
             style={{ fontSize: '12px' }}
           />
           <Tooltip 
-            formatter={(value: any) => `$${parseFloat(value).toFixed(2)}`}
+            formatter={(value: any) => `₹${parseFloat(value).toFixed(2)}`}
             contentStyle={{
               backgroundColor: 'white',
               border: '1px solid #e5e7eb',

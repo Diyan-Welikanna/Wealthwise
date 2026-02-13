@@ -61,7 +61,10 @@ export async function POST() {
           });
 
           // Update next occurrence
-          const nextOccurrence = calculateNextOccurrence(new Date(item.nextOccurrence), item.frequency);
+          const nextOccurrence = calculateNextOccurrence(
+            new Date(item.nextOccurrence), 
+            item.frequency as 'daily' | 'weekly' | 'monthly' | 'yearly'
+          );
           
           await prisma.recurringExpense.update({
             where: { id: item.id },

@@ -219,7 +219,7 @@ export default function RecurringPage() {
             <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white">
               <h3 className="text-lg font-semibold mb-2">Monthly Total</h3>
               <p className="text-4xl font-bold">
-                $
+                ₹
                 {recurring
                   .filter((r) => r.is_active && r.frequency === 'monthly')
                   .reduce((sum, r) => sum + parseFloat(r.amount.toString()), 0)

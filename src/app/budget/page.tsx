@@ -29,10 +29,6 @@ const categories = [
   { key: "travel", name: "Travel", color: "#06b6d4", icon: "✈️" },
   { key: "food", name: "Food", color: "#f59e0b", icon: "🍔" },
   { key: "health", name: "Health", color: "#8b5cf6", icon: "🏥" },
-  { key: "utilities", name: "Utilities", color: "#14b8a6", icon: "💡" },
-  { key: "transportation", name: "Transportation", color: "#f43f5e", icon: "🚗" },
-  { key: "shopping", name: "Shopping", color: "#a855f7", icon: "🛍️" },
-  { key: "education", name: "Education", color: "#3b82f6", icon: "📚" },
   { key: "investment", name: "Investment", color: "#10b981", icon: "📈", min: 10 },
   { key: "savings", name: "Savings", color: "#f97316", icon: "💰", min: 5 },
 ]
@@ -42,15 +38,11 @@ export default function BudgetPage() {
   const router = useRouter()
   const [income, setIncome] = useState<number>(0)
   const [budget, setBudget] = useState<BudgetAllocation>({
-    mortgage: 25,
-    entertainment: 15,
+    mortgage: 30,
+    entertainment: 10,
     travel: 10,
     food: 15,
     health: 10,
-    utilities: 8,
-    transportation: 7,
-    shopping: 5,
-    education: 3,
     investment: 15,
     savings: 10,
   })
@@ -122,12 +114,39 @@ export default function BudgetPage() {
   }
 
   const handleSliderChange = (category: string, value: number) => {
-    setBudget(prev => ({
-      ...prev,
+    const newBudget = {
+      ...budget,
       [category]: value
-    }))
+    }
+    setBudget(newBudget)
     setMessage("")
-    setErrors([])
+    
+    // Real-time validation
+    validateBudgetRealtime(newBudget)
+  }
+  
+  const validateBudgetRealtime = (currentBudget: BudgetAllocation) => {
+    const newErrors: string[] = []
+    const total = Object.values(currentBudget).reduce((sum, val) => sum + val, 0)
+
+    if (total !== 100) {
+      const diff = total - 100
+      if (diff > 0) {
+        newErrors.push(`Over budget by ${diff}% - reduce allocations`)
+      } else {
+        newErrors.push(`Under budget by ${Math.abs(diff)}% - allocate remaining`)
+      }
+    }
+
+    if (currentBudget.investment < 10) {
+      newErrors.push("⚠️ Investment should be at least 10%")
+    }
+
+    if (currentBudget.savings < 5) {
+      newErrors.push("⚠️ Savings should be at least 5%")
+    }
+
+    setErrors(newErrors)
   }
 
   const getTotalPercentage = () => {

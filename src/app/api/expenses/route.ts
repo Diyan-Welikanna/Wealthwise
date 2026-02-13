@@ -30,16 +30,14 @@ export async function GET(req: NextRequest) {
       },
     })
     
+    // Get all categories to initialize grouping
+    const allCategories = await prisma.category.findMany()
+    
     // Group expenses by category
-    const expensesByCategory: any = {
-      mortgage: [],
-      entertainment: [],
-      travel: [],
-      food: [],
-      health: [],
-      investment: [],
-      savings: [],
-    }
+    const expensesByCategory: any = {}
+    allCategories.forEach(cat => {
+      expensesByCategory[cat.name.toLowerCase()] = []
+    })
     
     transactions.forEach((transaction) => {
       const categoryName = transaction.category.name.toLowerCase()

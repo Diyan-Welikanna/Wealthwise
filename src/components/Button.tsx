@@ -18,10 +18,10 @@ export default function Button({
   const baseClasses = 'font-semibold rounded-lg transition-all inline-flex items-center justify-center gap-2'
   
   const variantClasses = {
-    primary: 'bg-gradient-purple text-white shadow-lg hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100',
-    secondary: 'bg-white text-purple-600 border-2 border-purple-500 hover:bg-purple-50',
-    success: 'bg-green-500 text-white hover:bg-green-600',
-    danger: 'bg-red-500 text-white hover:bg-red-600',
+    primary: 'bg-gradient-purple text-white shadow-lg hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 dark:shadow-purple-500/20',
+    secondary: 'bg-white dark:bg-gray-700 text-purple-600 dark:text-purple-400 border-2 border-purple-500 dark:border-purple-400 hover:bg-purple-50 dark:hover:bg-gray-600',
+    success: 'bg-green-500 dark:bg-green-600 text-white hover:bg-green-600 dark:hover:bg-green-700',
+    danger: 'bg-red-500 dark:bg-red-600 text-white hover:bg-red-600 dark:hover:bg-red-700',
   }
   
   const sizeClasses = {
