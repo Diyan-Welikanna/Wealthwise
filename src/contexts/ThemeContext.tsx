@@ -17,19 +17,42 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     setMounted(true);
-    // Check localStorage or system preference
+    // Check localStorage first, default to light if not found
     const savedTheme = localStorage.getItem('theme') as Theme | null;
-    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    const initialTheme = savedTheme || systemTheme;
+    const initialTheme = savedTheme || 'light'; // Always default to light
     setTheme(initialTheme);
-    document.documentElement.classList.toggle('dark', initialTheme === 'dark');
+    
+    // Apply theme to document
+    if (initialTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
   }, []);
 
   const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
-    document.documentElement.classList.toggle('dark', newTheme === 'dark');
+    setTheme((prevTheme) => {
+      const newTheme = prevTheme === 'light' ? 'dark' : 'light';
+      
+      console.log('🎨 Theme toggle clicked:', { prevTheme, newTheme });
+      
+      // Save to localStorage
+      localStorage.setItem('theme', newTheme);
+      
+      // Apply theme to document
+      if (newTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+        console.log('✅ Added "dark" class to <html>');
+      } else {
+        document.documentElement.classList.remove('dark');
+        console.log('✅ Removed "dark" class from <html>');
+      }
+      
+      console.log('📋 Current HTML classes:', document.documentElement.className);
+      console.log('💾 localStorage theme:', localStorage.getItem('theme'));
+      
+      return newTheme;
+    });
   };
 
   // Prevent flash of wrong theme

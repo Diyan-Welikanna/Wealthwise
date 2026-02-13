@@ -25,6 +25,7 @@ export async function GET(req: NextRequest) {
         name: true,
         email: true,
         phone: true,
+        currency: true,
         createdAt: true,
       },
     })
@@ -43,6 +44,7 @@ export async function GET(req: NextRequest) {
         name: user.name,
         email: user.email,
         phone: user.phone || '',
+        currency: user.currency,
         createdAt: user.createdAt.toISOString(),
       },
     })
@@ -68,7 +70,7 @@ export async function PUT(req: NextRequest) {
     
     const userId = parseInt(session.user.id)
     const body = await req.json()
-    const { name, phone } = body
+    const { name, phone, currency } = body
     
     if (!name) {
       return NextResponse.json(
@@ -84,12 +86,14 @@ export async function PUT(req: NextRequest) {
       data: {
         name,
         phone: phone || null,
+        ...(currency && { currency }),
       },
       select: {
         id: true,
         name: true,
         email: true,
         phone: true,
+        currency: true,
         createdAt: true,
       },
     })
@@ -102,6 +106,7 @@ export async function PUT(req: NextRequest) {
         name: user.name,
         email: user.email,
         phone: user.phone || '',
+        currency: user.currency,
         createdAt: user.createdAt.toISOString(),
       },
     })

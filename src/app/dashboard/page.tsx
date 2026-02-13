@@ -262,7 +262,49 @@ export default function DashboardPage() {
       
       <main className="flex-1 p-8 ml-64">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl font-bold text-gray-800 mb-8">Dashboard</h1>
+          <div className="flex items-center justify-between mb-8">
+            <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
+            
+            {/* Export Reports Buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  const url = `/api/reports?period=month`
+                  fetch(url)
+                    .then(res => res.json())
+                    .then(data => {
+                      import('@/utils/pdfGenerator').then(({ generateFinancialReport, downloadPDF }) => {
+                        const pdf = generateFinancialReport(data)
+                        downloadPDF(pdf, `WealthWise-Monthly-Report-${new Date().toISOString().split('T')[0]}.pdf`)
+                      })
+                    })
+                    .catch(err => console.error('Failed to generate report:', err))
+                }}
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
+              >
+                <span>📄</span>
+                <span>Monthly Report</span>
+              </button>
+              <button
+                onClick={() => {
+                  const url = `/api/reports?period=year`
+                  fetch(url)
+                    .then(res => res.json())
+                    .then(data => {
+                      import('@/utils/pdfGenerator').then(({ generateFinancialReport, downloadPDF }) => {
+                        const pdf = generateFinancialReport(data)
+                        downloadPDF(pdf, `WealthWise-Yearly-Report-${new Date().toISOString().split('T')[0]}.pdf`)
+                      })
+                    })
+                    .catch(err => console.error('Failed to generate report:', err))
+                }}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2"
+              >
+                <span>📊</span>
+                <span>Yearly Report</span>
+              </button>
+            </div>
+          </div>
 
           {/* Stats Cards */}
           <StatsCards 
@@ -452,3 +494,4 @@ export default function DashboardPage() {
     </div>
   )
 }
+

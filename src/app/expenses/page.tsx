@@ -354,7 +354,7 @@ export default function ExpensesPage() {
 
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Description (Optional)
+                    Description (optional)
                   </label>
                   <Input
                     type="text"
@@ -492,3 +492,4 @@ export default function ExpensesPage() {
     </div>
   )
 }
+

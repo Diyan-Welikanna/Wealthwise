@@ -184,3 +184,4 @@ export default function RecurringExpenseForm({ categories, onSubmit, onCancel }:
     </form>
   );
 }
+

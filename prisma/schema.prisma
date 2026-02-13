@@ -14,6 +14,7 @@ model User {
   password               String                  @db.VarChar(255)
   phone                  String?                 @db.VarChar(20)
   riskTolerance          String                  @default("moderate") @map("risk_tolerance") @db.VarChar(20) // conservative, moderate, aggressive
+  currency               String                  @default("INR") @db.VarChar(3) // ISO 4217 currency codes
   createdAt              DateTime                @default(now()) @map("created_at")
   updatedAt              DateTime                @updatedAt @map("updated_at")
   incomes                Income[]
@@ -21,6 +22,7 @@ model User {
   budgets                UserBudget?
   investmentPortfolio    InvestmentPortfolio[]
   investmentTransactions InvestmentTransaction[]
+  goals                  Goal[]
 
   @@map("users")
 }
@@ -132,4 +134,22 @@ model InvestmentTransaction {
   @@index([userId], map: "investment_transactions_user_id_fkey")
   @@index([portfolioId], map: "investment_transactions_portfolio_id_fkey")
   @@map("investment_transactions")
+}
+
+model Goal {
+  id            Int      @id @default(autoincrement())
+  userId        Int      @map("user_id")
+  name          String   @db.VarChar(100)
+  targetAmount  Decimal  @map("target_amount") @db.Decimal(12, 2)
+  currentAmount Decimal  @default(0) @map("current_amount") @db.Decimal(12, 2)
+  deadline      DateTime @db.Date
+  category      String   @db.VarChar(50) // emergency_fund, vacation, house, car, retirement, education, wedding, other
+  description   String?  @db.Text
+  isCompleted   Boolean  @default(false) @map("is_completed")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "goals_user_id_fkey")
+  @@map("goals")
 }

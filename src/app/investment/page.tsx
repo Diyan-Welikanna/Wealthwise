@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import Sidebar from '@/components/Sidebar'
 import Card from '@/components/Card'
 import Button from '@/components/Button'
+import Input from '@/components/Input'
 import toast from 'react-hot-toast'
 
 interface InvestmentCapacity {
@@ -71,6 +72,15 @@ export default function InvestmentPage() {
   const [portfolio, setPortfolio] = useState<PortfolioItem[]>([])
   const [portfolioSummary, setPortfolioSummary] = useState<PortfolioSummary | null>(null)
   const [showAddInvestment, setShowAddInvestment] = useState(false)
+  const [formData, setFormData] = useState({
+    investmentType: 'stocks',
+    name: '',
+    units: '',
+    buyPrice: '',
+    currentPrice: '',
+    purchaseDate: new Date().toISOString().split('T')[0]
+  })
+  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -136,11 +146,67 @@ export default function InvestmentPage() {
     }
   }
 
+  const handleAddInvestment = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSubmitting(true)
+
+    try {
+      const res = await fetch('/api/investment/portfolio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      })
+
+      const data = await res.json()
+
+      if (data.success) {
+        toast.success('Investment added successfully!')
+        setShowAddInvestment(false)
+        setFormData({
+          investmentType: 'stocks',
+          name: '',
+          units: '',
+          buyPrice: '',
+          currentPrice: '',
+          purchaseDate: new Date().toISOString().split('T')[0]
+        })
+        fetchData() // Refresh data
+      } else {
+        toast.error(data.error || 'Failed to add investment')
+      }
+    } catch (error) {
+      toast.error('Failed to add investment')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleDeleteInvestment = async (id: number) => {
+    if (!confirm('Are you sure you want to delete this investment?')) return
+
+    try {
+      const res = await fetch(`/api/investment/portfolio?id=${id}`, {
+        method: 'DELETE'
+      })
+
+      const data = await res.json()
+
+      if (data.success) {
+        toast.success('Investment deleted')
+        fetchData()
+      } else {
+        toast.error(data.error || 'Failed to delete investment')
+      }
+    } catch (error) {
+      toast.error('Failed to delete investment')
+    }
+  }
+
   const getRiskColor = (level: string) => {
     switch (level) {
-      case 'low': return 'text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400'
-      case 'medium': return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400'
-      case 'high': return 'text-red-600 bg-red-100 dark:bg-red-900/30 dark:text-red-400'
+      case 'low': return 'text-green-600 bg-green-100'
+      case 'medium': return 'text-yellow-600 bg-yellow-100'
+      case 'high': return 'text-red-600 bg-red-100'
       default: return 'text-gray-600 bg-gray-100'
     }
   }
@@ -159,7 +225,7 @@ export default function InvestmentPage() {
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
           <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
+          <p className="mt-4 text-gray-600">Loading...</p>
         </div>
       </div>
     )
@@ -168,15 +234,15 @@ export default function InvestmentPage() {
   if (!session) return null
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="flex min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
       <Sidebar />
       
       <main className="flex-1 p-8 ml-64">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="text-3xl font-bold text-gray-800 dark:text-dark-text">Investment Hub</h1>
-              <p className="text-gray-600 dark:text-gray-400 mt-1">Smart investment recommendations tailored to your goals</p>
+              <h1 className="text-3xl font-bold text-gray-800">Investment Hub</h1>
+              <p className="text-gray-600 mt-1">Smart investment recommendations tailored to your goals</p>
             </div>
             <Button onClick={() => setShowAddInvestment(true)}>
               + Add Investment
@@ -221,8 +287,8 @@ export default function InvestmentPage() {
             <Card className="mb-8">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-800 dark:text-dark-text mb-2">{riskProfile.title}</h2>
-                  <p className="text-gray-600 dark:text-gray-400">{riskProfile.description}</p>
+                  <h2 className="text-2xl font-bold text-gray-800 mb-2">{riskProfile.title}</h2>
+                  <p className="text-gray-600">{riskProfile.description}</p>
                 </div>
                 <div className="flex gap-2">
                   {['conservative', 'moderate', 'aggressive'].map(risk => (
@@ -232,7 +298,7 @@ export default function InvestmentPage() {
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-all capitalize ${
                         riskTolerance === risk
                           ? 'bg-purple-600 text-white'
-                          : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                     >
                       {risk}
@@ -242,8 +308,8 @@ export default function InvestmentPage() {
               </div>
               <ul className="space-y-2">
                 {riskProfile.characteristics.map((char, idx) => (
-                  <li key={idx} className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                    <span className="text-purple-600 dark:text-purple-400">✓</span>
+                  <li key={idx} className="flex items-center gap-2 text-gray-700">
+                    <span className="text-purple-600">✓</span>
                     {char}
                   </li>
                 ))}
@@ -253,37 +319,37 @@ export default function InvestmentPage() {
 
           {/* Investment Recommendations */}
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-dark-text mb-6">Recommended Investments</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Recommended Investments</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {recommendations.map((inv, idx) => (
                 <Card key={idx} className="hover:shadow-xl transition-shadow">
                   <div className="flex items-start justify-between mb-3">
                     <div>
-                      <h3 className="text-lg font-bold text-gray-800 dark:text-dark-text">{inv.name}</h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">{inv.type.replace('_', ' ')}</p>
+                      <h3 className="text-lg font-bold text-gray-800">{inv.name}</h3>
+                      <p className="text-sm text-gray-500 capitalize">{inv.type.replace('_', ' ')}</p>
                     </div>
                     <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getRiskColor(inv.riskLevel)}`}>
                       {inv.riskLevel.toUpperCase()}
                     </span>
                   </div>
 
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{inv.description}</p>
+                  <p className="text-sm text-gray-600 mb-4">{inv.description}</p>
 
-                  <div className="grid grid-cols-2 gap-4 mb-4 pb-4 border-b dark:border-gray-700">
+                  <div className="grid grid-cols-2 gap-4 mb-4 pb-4 border-b">
                     <div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Expected Return</p>
-                      <p className="text-sm font-semibold text-gray-800 dark:text-dark-text">{inv.expectedReturn}</p>
+                      <p className="text-xs text-gray-500">Expected Return</p>
+                      <p className="text-sm font-semibold text-gray-800">{inv.expectedReturn}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Min. Investment</p>
-                      <p className="text-sm font-semibold text-gray-800 dark:text-dark-text">₹{inv.minInvestment}</p>
+                      <p className="text-xs text-gray-500">Min. Investment</p>
+                      <p className="text-sm font-semibold text-gray-800">₹{inv.minInvestment}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Time Horizon</p>
-                      <p className="text-sm font-semibold text-gray-800 dark:text-dark-text">{inv.timeHorizon}</p>
+                      <p className="text-xs text-gray-500">Time Horizon</p>
+                      <p className="text-sm font-semibold text-gray-800">{inv.timeHorizon}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Liquidity</p>
+                      <p className="text-xs text-gray-500">Liquidity</p>
                       <p className={`text-sm font-semibold capitalize ${getLiquidityColor(inv.liquidity)}`}>
                         {inv.liquidity}
                       </p>
@@ -291,36 +357,36 @@ export default function InvestmentPage() {
                   </div>
 
                   <div className="mb-4">
-                    <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                    <p className="text-sm font-semibold text-gray-700 mb-2">
                       Recommended: {inv.recommendedAllocation}% 
-                      <span className="text-purple-600 dark:text-purple-400 ml-2">
+                      <span className="text-purple-600 ml-2">
                         (₹{((capacity?.availableToInvest || 0) * inv.recommendedAllocation / 100).toFixed(2)})
                       </span>
                     </p>
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
-                        className="bg-purple-600 dark:bg-purple-500 h-2 rounded-full transition-all"
+                        className="bg-purple-600 h-2 rounded-full transition-all"
                         style={{ width: `${inv.recommendedAllocation}%` }}
                       />
                     </div>
                   </div>
 
                   <details className="mb-3">
-                    <summary className="text-sm font-semibold text-gray-700 dark:text-gray-300 cursor-pointer">
+                    <summary className="text-sm font-semibold text-gray-700 cursor-pointer">
                       Pros & Cons
                     </summary>
                     <div className="mt-2 space-y-2">
                       <div>
-                        <p className="text-xs font-semibold text-green-600 dark:text-green-400 mb-1">Pros:</p>
-                        <ul className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                        <p className="text-xs font-semibold text-green-600 mb-1">Pros:</p>
+                        <ul className="text-xs text-gray-600 space-y-1">
                           {inv.pros.map((pro, i) => (
                             <li key={i}>✓ {pro}</li>
                           ))}
                         </ul>
                       </div>
                       <div>
-                        <p className="text-xs font-semibold text-red-600 dark:text-red-400 mb-1">Cons:</p>
-                        <ul className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                        <p className="text-xs font-semibold text-red-600 mb-1">Cons:</p>
+                        <ul className="text-xs text-gray-600 space-y-1">
                           {inv.cons.map((con, i) => (
                             <li key={i}>✗ {con}</li>
                           ))}
@@ -336,46 +402,56 @@ export default function InvestmentPage() {
           {/* Current Portfolio */}
           {portfolio.length > 0 && (
             <Card>
-              <h2 className="text-2xl font-bold text-gray-800 dark:text-dark-text mb-6">My Portfolio</h2>
+              <h2 className="text-2xl font-bold text-gray-800 mb-6">My Portfolio</h2>
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b dark:border-gray-700">
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Investment</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Type</th>
-                      <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Units</th>
-                      <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Invested</th>
-                      <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Current Value</th>
-                      <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">Profit/Loss</th>
-                      <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700 dark:text-gray-300">ROI</th>
+                    <tr className="border-b">
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Investment</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Type</th>
+                      <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Units</th>
+                      <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Invested</th>
+                      <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Current Value</th>
+                      <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Profit/Loss</th>
+                      <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">ROI</th>
+                      <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {portfolio.map((inv) => (
-                      <tr key={inv.id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
+                      <tr key={inv.id} className="border-b hover:bg-gray-50">
                         <td className="py-3 px-4">
-                          <p className="font-semibold text-gray-800 dark:text-dark-text">{inv.name}</p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                          <p className="font-semibold text-gray-800">{inv.name}</p>
+                          <p className="text-xs text-gray-500">
                             {new Date(inv.purchaseDate).toLocaleDateString()}
                           </p>
                         </td>
-                        <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400 capitalize">
+                        <td className="py-3 px-4 text-sm text-gray-600 capitalize">
                           {inv.investmentType.replace('_', ' ')}
                         </td>
-                        <td className="py-3 px-4 text-right text-sm text-gray-600 dark:text-gray-400">
+                        <td className="py-3 px-4 text-right text-sm text-gray-600">
                           {inv.units.toFixed(4)}
                         </td>
-                        <td className="py-3 px-4 text-right text-sm font-semibold text-gray-800 dark:text-dark-text">
+                        <td className="py-3 px-4 text-right text-sm font-semibold text-gray-800">
                           ₹{inv.totalInvested.toFixed(2)}
                         </td>
-                        <td className="py-3 px-4 text-right text-sm font-semibold text-gray-800 dark:text-dark-text">
+                        <td className="py-3 px-4 text-right text-sm font-semibold text-gray-800">
                           ₹{inv.currentValue.toFixed(2)}
                         </td>
-                        <td className={`py-3 px-4 text-right text-sm font-semibold ${inv.profit >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                        <td className={`py-3 px-4 text-right text-sm font-semibold ${inv.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                           {inv.profit >= 0 ? '+' : ''}₹{inv.profit.toFixed(2)}
                         </td>
-                        <td className={`py-3 px-4 text-right text-sm font-semibold ${inv.roi >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                        <td className={`py-3 px-4 text-right text-sm font-semibold ${inv.roi >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                           {inv.roi >= 0 ? '+' : ''}{inv.roi.toFixed(2)}%
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <button
+                            onClick={() => handleDeleteInvestment(inv.id)}
+                            className="text-red-600 hover:text-red-800 text-sm font-medium"
+                            title="Delete investment"
+                          >
+                            Delete
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -387,7 +463,7 @@ export default function InvestmentPage() {
 
           {portfolio.length === 0 && (
             <Card className="text-center py-12">
-              <p className="text-gray-500 dark:text-gray-400 text-lg mb-4">No investments in your portfolio yet</p>
+              <p className="text-gray-500 text-lg mb-4">No investments in your portfolio yet</p>
               <Button onClick={() => setShowAddInvestment(true)}>
                 Start Investing
               </Button>
@@ -395,6 +471,169 @@ export default function InvestmentPage() {
           )}
         </div>
       </main>
+
+      {/* Add Investment Modal */}
+      {showAddInvestment && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-gray-800">Add Investment</h2>
+                <button
+                  onClick={() => setShowAddInvestment(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <form onSubmit={handleAddInvestment} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Investment Type
+                </label>
+                <select
+                  value={formData.investmentType}
+                  onChange={(e) => setFormData({ ...formData, investmentType: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                  required
+                >
+                  <option value="stocks">Stocks</option>
+                  <option value="bonds">Bonds</option>
+                  <option value="mutual_funds">Mutual Funds</option>
+                  <option value="real_estate">Real Estate (REITs)</option>
+                  <option value="crypto">Cryptocurrency</option>
+                  <option value="fixed_deposit">Fixed Deposit</option>
+                  <option value="gold">Gold</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Investment Name
+                </label>
+                <Input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="e.g., Apple Inc. (AAPL), HDFC Mutual Fund"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Units/Quantity
+                  </label>
+                  <Input
+                    type="number"
+                    step="0.0001"
+                    value={formData.units}
+                    onChange={(e) => setFormData({ ...formData, units: e.target.value })}
+                    placeholder="10"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Purchase Date
+                  </label>
+                  <Input
+                    type="date"
+                    value={formData.purchaseDate}
+                    onChange={(e) => setFormData({ ...formData, purchaseDate: e.target.value })}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Buy Price (₹)
+                  </label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={formData.buyPrice}
+                    onChange={(e) => setFormData({ ...formData, buyPrice: e.target.value })}
+                    placeholder="150.50"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Current Price (₹)
+                  </label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={formData.currentPrice}
+                    onChange={(e) => setFormData({ ...formData, currentPrice: e.target.value })}
+                    placeholder="175.00"
+                    required
+                  />
+                </div>
+              </div>
+
+              {formData.units && formData.buyPrice && formData.currentPrice && (
+                <div className="bg-purple-50 p-4 rounded-lg">
+                  <div className="grid grid-cols-3 gap-4 text-sm">
+                    <div>
+                      <p className="text-gray-600">Total Invested</p>
+                      <p className="text-lg font-bold text-gray-900">
+                        ₹{(parseFloat(formData.units) * parseFloat(formData.buyPrice)).toFixed(2)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-600">Current Value</p>
+                      <p className="text-lg font-bold text-gray-900">
+                        ₹{(parseFloat(formData.units) * parseFloat(formData.currentPrice)).toFixed(2)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-600">Profit/Loss</p>
+                      <p className={`text-lg font-bold ${
+                        (parseFloat(formData.currentPrice) - parseFloat(formData.buyPrice)) >= 0 
+                          ? 'text-green-600' 
+                          : 'text-red-600'
+                      }`}>
+                        {(parseFloat(formData.currentPrice) - parseFloat(formData.buyPrice)) >= 0 ? '+' : ''}
+                        ₹{((parseFloat(formData.units) * parseFloat(formData.currentPrice)) - 
+                           (parseFloat(formData.units) * parseFloat(formData.buyPrice))).toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-4">
+                <Button
+                  type="button"
+                  onClick={() => setShowAddInvestment(false)}
+                  className="flex-1 bg-gray-200 text-gray-800 hover:bg-gray-300"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={submitting}
+                  className="flex-1"
+                >
+                  {submitting ? 'Adding...' : 'Add Investment'}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
+

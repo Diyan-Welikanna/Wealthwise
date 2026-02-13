@@ -7,12 +7,15 @@ import Sidebar from "@/components/Sidebar"
 import Card from "@/components/Card"
 import Input from "@/components/Input"
 import Button from "@/components/Button"
+import { getSupportedCurrencies } from "@/utils/currencyConverter"
+import { notifySuccess, notifyError } from "@/utils/notifications"
 
 interface UserProfile {
   id: number
   name: string
   email: string
   phone: string | null
+  currency: string
   createdAt: string
 }
 
@@ -28,7 +31,10 @@ export default function ProfilePage() {
     name: "",
     email: "",
     phone: "",
+    currency: "INR",
   })
+
+  const currencies = getSupportedCurrencies()
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -53,6 +59,7 @@ export default function ProfilePage() {
           name: data.user.name,
           email: data.user.email,
           phone: data.user.phone || "",
+          currency: data.user.currency || "INR",
         })
       }
     } catch (error) {
@@ -72,6 +79,7 @@ export default function ProfilePage() {
         name: profile.name,
         email: profile.email,
         phone: profile.phone || "",
+        currency: profile.currency || "INR",
       })
     }
     setMessage("")
@@ -94,15 +102,14 @@ export default function ProfilePage() {
       const data = await res.json()
 
       if (data.success) {
-        setMessage("Profile updated successfully!")
+        notifySuccess("Profile updated successfully!")
         setIsEditing(false)
         await fetchProfile()
-        setTimeout(() => setMessage(""), 3000)
       } else {
-        setMessage(data.message || "Failed to update profile")
+        notifyError(data.message || "Failed to update profile")
       }
     } catch (error) {
-      setMessage("An error occurred. Please try again.")
+      notifyError("An error occurred. Please try again.")
     } finally {
       setLoading(false)
     }
@@ -217,6 +224,27 @@ export default function ProfilePage() {
                       placeholder="Enter phone number"
                     />
                   </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Preferred Currency
+                    </label>
+                    <select
+                      value={formData.currency}
+                      onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
+                      disabled={!isEditing}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    >
+                      {currencies.map((curr) => (
+                        <option key={curr.code} value={curr.code}>
+                          {curr.symbol} {curr.code} - {curr.name}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-gray-500 mt-1">
+                      All amounts will be displayed in your preferred currency
+                    </p>
+                  </div>
                 </div>
 
                 {message && (
@@ -299,3 +327,4 @@ export default function ProfilePage() {
     </div>
   )
 }
+

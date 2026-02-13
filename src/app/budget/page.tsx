@@ -345,7 +345,7 @@ export default function BudgetPage() {
                       <div className="flex items-center gap-2">
                         <span className="text-xl">{category.icon}</span>
                         <span className="font-medium text-gray-700">{category.name}</span>
-                        {category.min && (
+                        {category.min && category.min > 0 && (
                           <span className="text-xs text-gray-500">(min {category.min}%)</span>
                         )}
                       </div>
@@ -453,3 +453,4 @@ export default function BudgetPage() {
     </div>
   )
 }
+

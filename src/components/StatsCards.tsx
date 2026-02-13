@@ -89,3 +89,4 @@ export default function StatsCards({ income, totalSpent, totalSaved, budgetHealt
     </div>
   )
 }
+

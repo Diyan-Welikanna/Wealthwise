@@ -30,23 +30,23 @@ export default class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       return (
         this.props.fallback || (
-          <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
-            <div className="max-w-md w-full bg-white dark:bg-dark-surface rounded-lg shadow-lg p-8 text-center">
-              <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+            <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-4xl">⚠️</span>
               </div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-dark-text mb-2">
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">
                 Oops! Something went wrong
               </h1>
-              <p className="text-gray-600 dark:text-gray-400 mb-6">
+              <p className="text-gray-600 mb-6">
                 We encountered an unexpected error. Don't worry, your data is safe.
               </p>
               {this.state.error && (
-                <details className="text-left mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded text-sm">
-                  <summary className="cursor-pointer font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                <details className="text-left mb-6 p-4 bg-gray-50 rounded text-sm">
+                  <summary className="cursor-pointer font-semibold text-gray-700 mb-2">
                     Error Details
                   </summary>
-                  <code className="text-red-600 dark:text-red-400 block break-all">
+                  <code className="text-red-600 block break-all">
                     {this.state.error.toString()}
                   </code>
                 </details>
@@ -60,7 +60,7 @@ export default class ErrorBoundary extends Component<Props, State> {
                 </button>
                 <button
                   onClick={() => window.location.href = '/dashboard'}
-                  className="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-dark-text rounded-lg font-medium transition-colors"
+                  className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-900 rounded-lg font-medium transition-colors"
                 >
                   Go to Dashboard
                 </button>
@@ -74,3 +74,4 @@ export default class ErrorBoundary extends Component<Props, State> {
     return this.props.children
   }
 }
+

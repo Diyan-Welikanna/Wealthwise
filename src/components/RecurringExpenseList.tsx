@@ -123,3 +123,4 @@ export default function RecurringExpenseList({ expenses, onToggle, onDelete }: R
     </div>
   );
 }
+
